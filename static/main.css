@@ -1,0 +1,17 @@
+* {
+    font-family: monospace;
+    font-size: 1.1rem;
+}
+table {
+    border-collapse: collapse;
+}
+td, th {
+    text-align: left;
+    border: #aaa 1px solid;
+    padding: .3rem;
+}
+.right {
+    text-align: right;
+}
+.green { color: teal }
+.red { color: maroon }
