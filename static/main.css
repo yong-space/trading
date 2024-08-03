@@ -1,6 +1,17 @@
 * {
     font-family: monospace;
-    font-size: 1.1rem;
+    font-size: 1rem;
+}
+html, body {
+    height: 100%;
+    display: flex;
+    flex: 1 1 1px;
+    flex-direction: column;
+}
+.container {
+    display: flex;
+    flex: 1 1 1px;
+    overflow: auto;
 }
 table {
     border-collapse: collapse;
@@ -9,9 +20,35 @@ td, th {
     text-align: left;
     border: #aaa 1px solid;
     padding: .3rem;
+    text-wrap: nowrap;
 }
-.right {
-    text-align: right;
+tr:nth-child(2n) {
+    background: #d3e4e4;
 }
+th {
+    position: sticky; top: -1px;
+    background: #005757;
+    color: white;
+}
+.divider, .divider td {
+    padding: 0;
+    height: 1px;
+    background: #005757;
+}
+tfoot {
+    position: sticky; bottom: 0;
+    font-weight: 800;
+}
+tfoot {
+    position: sticky; bottom: 0;
+    font-weight: 800;
+}
+#foot {
+    background: transparent;
+}
+#foot td { background: #fff }
+.right { text-align: right }
 .green { color: teal }
 .red { color: maroon }
+.title { font-weight: 800 }
+.small { font-size: 0.8rem }
