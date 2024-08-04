@@ -29,15 +29,14 @@ th {
     position: sticky; top: -1px;
     background: #005757;
     color: white;
+    max-height: 1rem;
+    user-select: none;
 }
+th:hover { cursor: pointer }
 .divider, .divider td {
     padding: 0;
     height: 1px;
     background: #005757;
-}
-tfoot {
-    position: sticky; bottom: 0;
-    font-weight: 800;
 }
 tfoot {
     position: sticky; bottom: 0;
@@ -52,3 +51,4 @@ tfoot {
 .red { color: maroon }
 .title { font-weight: 800 }
 .small { font-size: 0.8rem }
+.sorter { display: inline }

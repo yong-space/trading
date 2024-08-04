@@ -6,31 +6,22 @@
     <title>Portfolio</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <script crossorigin src="https://unpkg.com/htm@2.2.1"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 </head>
 <body>
     <h1>Portfolio</h1>
-    <div class="container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Ticker</th>
-                    <th>Price</th>
-                    <th>Day</th>
-                    <th>Day %</th>
-                    <th>Net</th>
-                    <th>Net %</th>
-                    <th>Value</th>
-                </tr>
-            </thead>
-            <tbody id="root"></tbody>
-            <tfoot>
-                <tr class="divider">
-                    <td colspan="7"></td>
-                </tr>
-                <tr id="foot"></tr>
-            </tfoot>
-        </table>
-    </div>
-    <script src='main.js'></script>
+    <div id="root" class="container"></div>
+    <script type="importmap">
+    {
+        "imports": {
+            "preact": "https://esm.sh/preact@10.19.2",
+            "preact/": "https://esm.sh/preact@10.19.2/",
+            "htm/preact": "https://esm.sh/htm@3.1.1/preact?external=preact"
+        }
+    }
+    </script>
+    <script type="module" src="main.js"></script>
 </body>
 </html>
