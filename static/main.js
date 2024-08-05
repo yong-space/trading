@@ -25,7 +25,6 @@ const headerFields = {
     'Net %': 'unrealizedPnlPercent',
     'Value': 'mktValue',
 };
-// ▲ ▼
 
 const Headers = ({ sort, setSort }) => {
     const handleSort = (label) => {
@@ -44,46 +43,42 @@ const Headers = ({ sort, setSort }) => {
 
     const Header = ({ label }) => {
         return html`
-            <th onClick=${() => handleSort(label)}>
+            <div onClick=${() => handleSort(label)}>
                 ${label}
                 <${SortSymbol} field=${headerFields[label]} />
-            </th>
+            </div>
         `;
     };
 
-    return html`
-        <thead>
-            <tr>
-                ${ Object.keys(headerFields).map((label) => html`<${Header} label=${label} />`) }
-            </tr>
-        </thead>
-    `;
+    return html`<div class="table-row header">
+        ${ Object.keys(headerFields).map((label) => html`<${Header} label=${label} />`) }
+    </div>`;
 };
 
 const DataRows = ({ data }) => data.map((row) => html`
-    <tr>
-        <td>
+    <div class="table-row">
+        <div class="ticker">
             <div class="title">${row.ticker}</div>
             <div class="small">${row.name}</div>
-        </td>
-        <td class="right">${formatNumber(row.lastPrice)}</td>
-        <td class="right">${colourise(row.dailyPnl)}</td>
-        <td class="right">${colourise(row.changePercent, true)}</td>
-        <td class="right">${colourise(row.unrealizedPnl)}</td>
-        <td class="right">${colourise(row.unrealizedPnlPercent, true)}</td>
-        <td class="right">${formatNumber(row.mktValue)}</td>
-    </tr>
+        </div>
+        <div class="right">${formatNumber(row.lastPrice)}</div>
+        <div class="right">${colourise(row.dailyPnl)}</div>
+        <div class="right">${colourise(row.changePercent, true)}</div>
+        <div class="right">${colourise(row.unrealizedPnl)}</div>
+        <div class="right">${colourise(row.unrealizedPnlPercent, true)}</div>
+        <div class="right">${formatNumber(row.mktValue)}</div>
+    </div>
 `);
 
 const SummaryTow = ({ summary }) => !summary.positions ? '' : html`
-    <tr>
-        <td colspan="2">${summary.positions} positions</td>
-        <td class="right">${colourise(summary.totalDailyPnl)}</td>
-        <td class="right">${colourise(summary.todayChange, true)}</td>
-        <td class="right">${colourise(summary.totalUnrealisedPnl)}</td>
-        <td class="right">${colourise(summary.totalUnrealizedPnlPercent, true)}</td>
-        <td class="right">${formatNumber(summary.totalMktValue)}</td>
-    </tr>
+    <div class="table-row footer">
+        <div class="double">${summary.positions} positions</div>
+        <div class="right">${colourise(summary.totalDailyPnl)}</div>
+        <div class="right">${colourise(summary.todayChange, true)}</div>
+        <div class="right">${colourise(summary.totalUnrealisedPnl)}</div>
+        <div class="right">${colourise(summary.totalUnrealizedPnlPercent, true)}</div>
+        <div class="right">${formatNumber(summary.totalMktValue)}</div>
+    </div>
 `;
 
 const clean = (data) => data.map((row) => ({
@@ -120,7 +115,7 @@ const Main = () => {
         }
 
         const positions = data.length;
-        const totalDailyPnl = data.reduce((sum, item) => sum + Number(item.dailyPnl), 0);
+        const totalDailyPnl = data.reduce((sum, item) => sum + (Number(item.dailyPnl) || 0), 0);
         const totalUnrealisedPnl = data.reduce((sum, item) => sum + item.unrealizedPnl, 0);
         const totalMktValue = data.reduce((sum, item) => sum + item.mktValue, 0);
         const todayChange = (totalDailyPnl * 100) / (totalMktValue - totalDailyPnl);
@@ -139,18 +134,11 @@ const Main = () => {
     }, [ sort ]);
 
     return data.length === 0 ? 'Loading..' : html`
-        <table>
+        <div class="table">
             <${Headers} sort=${sort} setSort=${setSort} />
-            <tbody>
-                <${DataRows} data=${data} />
-            </tbody>
-            <tfoot>
-                <tr class="divider">
-                    <td colspan="7"></td>
-                </tr>
-                <${SummaryTow} summary=${summary} />
-            </tfoot>
-        </table>
+            <${DataRows} data=${data} />
+            <${SummaryTow} summary=${summary} />
+        </div>
     `;
 };
 
