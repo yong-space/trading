@@ -92,6 +92,14 @@ const clean = (data) => data.map((row) => ({
     mktValue: Number(row.mktValue),
 }));
 
+const textFields = [ 'ticker' ];
+const sortData = (data, field, order) => {
+    if (textFields.indexOf(field) === -1) {
+        return data.toSorted((a, b) => (order === 'asc') ? (a[field] - b[field]) : (b[field] - a[field]));
+    }
+    return data.toSorted((a, b) => (order === 'asc') ? a[field].localeCompare(b[field]) : b[field].localeCompare(a[field]));
+};
+
 const Main = () => {
     const [ data, setData ] = useState([]);
     const [ summary, setSummary ] = useState({});
@@ -105,7 +113,7 @@ const Main = () => {
                 }
                 throw Error(await response.text());
             })
-            .then((response) => setData(clean(response)))
+            .then((response) => setData(sortData(clean(response), sort.field, sort.order)))
             .catch((e) => console.error(e));
     }, []);
 
@@ -115,7 +123,7 @@ const Main = () => {
         }
 
         const positions = data.length;
-        const totalDailyPnl = data.reduce((sum, item) => sum + (Number(item.dailyPnl) || 0), 0);
+        const totalDailyPnl = data.reduce((sum, item) => sum + item.dailyPnl, 0);
         const totalUnrealisedPnl = data.reduce((sum, item) => sum + item.unrealizedPnl, 0);
         const totalMktValue = data.reduce((sum, item) => sum + item.mktValue, 0);
         const todayChange = (totalDailyPnl * 100) / (totalMktValue - totalDailyPnl);
@@ -125,12 +133,10 @@ const Main = () => {
     }, [ data ]);
 
     useEffect(() => {
-        const { field, order } = sort;
-        if (field === 'ticker') {
-            setData(data.toSorted((a, b) => (order === 'asc') ? a.ticker.localeCompare(b.ticker) : b.ticker.localeCompare(a.ticker)));
-        } else {
-            setData(data.toSorted((a, b) => (order === 'asc') ? (a[field] - b[field]) : (b[field] - a[field])));
+        if (data.length === 0) {
+            return;
         }
+        setData(sortData(data, sort.field, sort.order));
     }, [ sort ]);
 
     return data.length === 0 ? 'Loading..' : html`
