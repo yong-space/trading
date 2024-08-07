@@ -92,6 +92,14 @@ const clean = (data) => data.map((row) => ({
     mktValue: Number(row.mktValue),
 }));
 
+const textFields = [ 'ticker' ];
+const sortData = (data, field, order) => {
+    if (textFields.indexOf(field) > -1) {
+        return data.toSorted((a, b) => (order === 'asc') ? (a[field] - b[field]) : (b[field] - a[field]));
+    }
+    return data.toSorted((a, b) => (order === 'asc') ? a.ticker.localeCompare(b[field]) : b.ticker.localeCompare(a[field]));
+};
+
 const Main = () => {
     const [ data, setData ] = useState([]);
     const [ summary, setSummary ] = useState({});
@@ -105,7 +113,7 @@ const Main = () => {
                 }
                 throw Error(await response.text());
             })
-            .then((response) => setData(clean(response)))
+            .then((response) => setData(sortData(clean(response), sort.field, sort.order)))
             .catch((e) => console.error(e));
     }, []);
 
@@ -124,14 +132,7 @@ const Main = () => {
         setSummary({ positions, totalDailyPnl, totalUnrealisedPnl, totalMktValue, todayChange, totalUnrealizedPnlPercent });
     }, [ data ]);
 
-    useEffect(() => {
-        const { field, order } = sort;
-        if (field === 'ticker') {
-            setData(data.toSorted((a, b) => (order === 'asc') ? a.ticker.localeCompare(b.ticker) : b.ticker.localeCompare(a.ticker)));
-        } else {
-            setData(data.toSorted((a, b) => (order === 'asc') ? (a[field] - b[field]) : (b[field] - a[field])));
-        }
-    }, [ sort ]);
+    useEffect(() => setData(sortData(data, sort.field, sort.order)), [ sort ]);
 
     return data.length === 0 ? 'Loading..' : html`
         <div class="table">
