@@ -81,17 +81,6 @@ const SummaryTow = ({ summary }) => !summary.positions ? '' : html`
     </div>
 `;
 
-const clean = (data) => data.map((row) => ({
-    ticker: row.ticker,
-    name: row.name,
-    lastPrice: row.lastPrice ? Number(row.lastPrice.replace(/C/g, '')) : 0,
-    dailyPnl: Number(row.dailyPnl || 0),
-    changePercent: (Number(row.dailyPnl || 0) * 100) / Number(row.mktValue - Number(row.dailyPnl || 0)),
-    unrealizedPnl: Number(row.unrealizedPnl || 0),
-    unrealizedPnlPercent: Number(row.unrealizedPnlPercent.replace(/%/g, '')),
-    mktValue: Number(row.mktValue),
-}));
-
 const textFields = [ 'ticker' ];
 const sortData = (data, field, order) => {
     if (textFields.indexOf(field) === -1) {
@@ -113,7 +102,7 @@ const Main = () => {
                 }
                 throw Error(await response.text());
             })
-            .then((response) => setData(sortData(clean(response), sort.field, sort.order)))
+            .then((response) => setData(sortData(response, sort.field, sort.order)))
             .catch((e) => console.error(e));
     }, []);
 

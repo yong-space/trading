@@ -3,8 +3,27 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class Ibkr:
+    def clean(self, row):
+        lastPrice = float(row['lastPrice'].replace('C', '')) if 'lastPrice' in row and row['lastPrice'] else 0
+        dailyPnl = float(row.get('dailyPnl', 0))
+        mktValue = float(row['mktValue']) if 'mktValue' in row else 0
+        changePercent = (dailyPnl * 100) / (mktValue - dailyPnl) if mktValue != dailyPnl else 0
+        unrealizedPnl = float(row.get('unrealizedPnl', 0))
+        unrealizedPnlPercent = float(row['unrealizedPnlPercent'].replace('%', '')) if 'unrealizedPnlPercent' in row else 0
+
+        return {
+            'ticker': row['ticker'],
+            'name': row['name'],
+            'lastPrice': lastPrice,
+            'dailyPnl': dailyPnl,
+            'changePercent': changePercent,
+            'unrealizedPnl': unrealizedPnl,
+            'unrealizedPnlPercent': unrealizedPnlPercent,
+            'mktValue': mktValue,
+        }
+
     def get_positions(self):
-        client = IbkrClient(host='ibeam')
+        client = IbkrClient(host='localhost')
         account_id = client.portfolio_accounts().data[0]['id']
         full_positions = client.positions(account_id = account_id).data
 
@@ -36,4 +55,4 @@ class Ibkr:
             for pos in positions
         ]
 
-        return merged
+        return [ self.clean(row) for row in merged ]
