@@ -37,7 +37,7 @@ const Headers = ({ sort, setSort }) => {
     };
 
     const SortSymbol = ({ field }) => html`
-        <div class="sorter ${(sort.order === 'asc') ? 'green' : 'red'}">
+        <div class="${(sort.order === 'asc') ? 'green' : 'red'}">
             ${(field !== sort.field) ? ` ` : (sort.order === 'asc') ? ' ▲' : ' ▼'}
         </div>`;
 
