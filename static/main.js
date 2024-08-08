@@ -85,9 +85,9 @@ const clean = (data) => data.map((row) => ({
     ticker: row.ticker,
     name: row.name,
     lastPrice: row.lastPrice ? Number(row.lastPrice.replace(/C/g, '')) : 0,
-    dailyPnl: row.dailyPnl ? Number(row.dailyPnl) : 0,
-    changePercent: Number(row.changePercent),
-    unrealizedPnl: Number(row.unrealizedPnl),
+    dailyPnl: Number(row.dailyPnl || 0),
+    changePercent: (Number(row.dailyPnl || 0) * 100) / Number(row.mktValue - Number(row.dailyPnl || 0)),
+    unrealizedPnl: Number(row.unrealizedPnl || 0),
     unrealizedPnlPercent: Number(row.unrealizedPnlPercent.replace(/%/g, '')),
     mktValue: Number(row.mktValue),
 }));

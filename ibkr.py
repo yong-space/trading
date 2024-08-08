@@ -12,7 +12,6 @@ class Ibkr:
             '31': 'lastPrice',
             '80': 'unrealizedPnlPercent',
             '78': 'dailyPnl',
-            '83': 'changePercent'
         }
         client.portfolio_accounts()
         marketdata = client.live_marketdata_snapshot(
