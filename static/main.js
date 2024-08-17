@@ -2,7 +2,7 @@ import { render } from 'preact';
 import { useState, useEffect } from 'preact/hooks';
 import { html } from 'htm/preact';
 
-const formatNumber = (input) => input.toLocaleString('en-US', {
+const formatNumber = (input) => !input ? '' : input.toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
 });
@@ -93,6 +93,7 @@ const Main = () => {
     const [ data, setData ] = useState([]);
     const [ summary, setSummary ] = useState({});
     const [ sort, setSort ] = useState({ field: 'changePercent', order: 'desc' });
+    const [ error, setError ] = useState('');
 
     useEffect(() => {
         fetch('positions')
@@ -103,7 +104,7 @@ const Main = () => {
                 throw Error(await response.text());
             })
             .then((response) => setData(sortData(response, sort.field, sort.order)))
-            .catch((e) => console.error(e));
+            .catch((e) => setError(e.message));
     }, []);
 
     useEffect(() => {
@@ -128,13 +129,13 @@ const Main = () => {
         setData(sortData(data, sort.field, sort.order));
     }, [ sort ]);
 
-    return data.length === 0 ? 'Loading..' : html`
+    return error || (!data.length ? 'Loading..' : html`
         <div class="table">
             <${Headers} sort=${sort} setSort=${setSort} />
             <${DataRows} data=${data} />
             <${SummaryTow} summary=${summary} />
         </div>
-    `;
+    `);
 };
 
 render(html`<${Main} />`, document.getElementById('root'));
