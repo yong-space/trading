@@ -39,6 +39,9 @@ h1 {
 .table-row {
     display: contents;
 }
+.table-row:not(.header):nth-child(even) > div {
+    background: #fff;
+}
 .table-row:not(.header):nth-child(odd) > div {
     background: #d3e4e4;
 }
@@ -61,9 +64,16 @@ h1 {
     flex-direction: column;
     align-items: flex-start;
 }
-.table-row > div.double {
-    grid-column-start: 1;
-    grid-column-end: 3;
+.table-row > div:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 5;
+}
+.table-row:first-child > div:first-child {
+    position: sticky;
+    left: 0;
+    top: 0;
+    z-index: 6;
 }
 .header > div {
     position: sticky;

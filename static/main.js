@@ -2,9 +2,9 @@ import { render } from 'preact';
 import { useState, useEffect } from 'preact/hooks';
 import { html } from 'htm/preact';
 
-const formatNumber = (input) => !input ? '' : input.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+const formatNumber = (input, decimals = 2) => !input ? '' : input.toLocaleString('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
 });
 
 const colourise = (input, percent = false) => {
@@ -12,7 +12,7 @@ const colourise = (input, percent = false) => {
         return '';
     }
     const styleClass = input >= 0 ? 'green' : 'red';
-    const formatted = formatNumber(input);
+    const formatted = formatNumber(input, percent ? 1 : 0);
     return html`<span class="${styleClass}">${formatted}${percent ? '%' : ''}</span>`
 };
 
@@ -72,7 +72,8 @@ const DataRows = ({ data }) => data.map((row) => html`
 
 const SummaryTow = ({ summary }) => !summary.positions ? '' : html`
     <div class="table-row footer">
-        <div class="double">${summary.positions} positions</div>
+        <div>${summary.positions} positions</div>
+        <div></div>
         <div class="right">${colourise(summary.totalDailyPnl)}</div>
         <div class="right">${colourise(summary.todayChange, true)}</div>
         <div class="right">${colourise(summary.totalUnrealisedPnl)}</div>

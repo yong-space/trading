@@ -3,9 +3,28 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class Ibkr:
+    def processK(self, val):
+        if 'K' in val:
+            return float(val.replace('K', '')) * 1000
+        else:
+            return float(val)
+
+    def cleanPosition(self, row):
+        unrealizedPnlPercent = row['unrealizedPnl'] / row['mktValue']
+        return {
+            'ticker': row['ticker'],
+            'name': row['name'],
+            'lastPrice': row['mktPrice'],
+            'dailyPnl': 0,
+            'changePercent': 0,
+            'unrealizedPnl': row['unrealizedPnl'],
+            'unrealizedPnlPercent': unrealizedPnlPercent,
+            'mktValue': row['mktValue'],
+        }
+
     def clean(self, row):
         lastPrice = float(row['lastPrice'].replace('C', '')) if 'lastPrice' in row and row['lastPrice'] else 0
-        dailyPnl = float(row.get('dailyPnl', 0))
+        dailyPnl = self.processK(row.get('dailyPnl', 0))
         mktValue = float(row['mktValue']) if 'mktValue' in row else 0
         changePercent = (dailyPnl * 100) / (mktValue - dailyPnl) if mktValue != dailyPnl else 0
         unrealizedPnl = float(row.get('unrealizedPnl', 0))
@@ -27,7 +46,15 @@ class Ibkr:
         account_id = client.portfolio_accounts().data[0]['id']
         full_positions = client.positions(account_id = account_id).data
 
-        positions_fields = [ 'avgCost', 'conid', 'ticker', 'name', 'unrealizedPnl', 'mktValue' ]
+        positions_fields = [
+            'avgCost',
+            'conid',
+            'ticker',
+            'name',
+            'unrealizedPnl',
+            'mktValue',
+            'mktPrice'
+        ]
         positions = [
             { k: v for k, v in d.items() if k in positions_fields }
             for d in full_positions
@@ -58,5 +85,6 @@ class Ibkr:
             ]
 
             return [ self.clean(row) for row in merged ]
-        except Exception:
-            return positions
+        except Exception as e:
+            print(e)
+            return [ self.cleanPosition(row) for row in positions ]
