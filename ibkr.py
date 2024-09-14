@@ -67,7 +67,7 @@ class Ibkr:
         }
 
         try:
-            client.portfolio_accounts()
+            client.receive_brokerage_accounts()
             marketdata = client.live_marketdata_snapshot(
                 conids = [ str(item['conid']) for item in full_positions ],
                 fields = list(marketdata_fields.keys())
