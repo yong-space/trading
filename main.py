@@ -5,11 +5,12 @@ import traceback
 import sys
 
 app = FastAPI()
+ibkr = Ibkr()
 
 @app.get("/positions")
 async def positions():
     try:
-        return Ibkr().get_positions()
+        return ibkr.get_positions()
     except Exception:
         exc_info = sys.exc_info()
         raise HTTPException(status_code=500, detail=''.join(traceback.format_exception(*exc_info)))

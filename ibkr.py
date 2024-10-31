@@ -3,13 +3,18 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class Ibkr:
+    def __init__(self, host='localhost'):
+        self.client = IbkrClient(host=host)
+        self.account_id = self.client.portfolio_accounts().data[0]['id']
+        print('Account ID:', self.account_id)
+
     def processK(self, val):
         if 'K' in val:
             return float(val.replace('K', '')) * 1000
         else:
             return float(val)
 
-    def cleanPosition(self, row):
+    def clean_position(self, row):
         unrealizedPnlPercent = row['unrealizedPnl'] / row['mktValue']
         return {
             'ticker': row['ticker'],
@@ -22,7 +27,7 @@ class Ibkr:
             'mktValue': row['mktValue'],
         }
 
-    def clean(self, row):
+    def clean_row(self, row):
         lastPrice = float(row['lastPrice'].replace('C', '')) if 'lastPrice' in row and row['lastPrice'] else 0
         dailyPnl = self.processK(row.get('dailyPnl', 0))
         mktValue = float(row['mktValue']) if 'mktValue' in row else 0
@@ -41,50 +46,56 @@ class Ibkr:
             'mktValue': mktValue,
         }
 
-    def get_positions(self):
-        client = IbkrClient(host='localhost')
-        account_id = client.portfolio_accounts().data[0]['id']
-        full_positions = client.positions(account_id = account_id).data
+    positions_fields = [
+        'avgCost',
+        'conid',
+        'ticker',
+        'name',
+        'unrealizedPnl',
+        'mktValue',
+        'mktPrice'
+    ]
 
-        positions_fields = [
-            'avgCost',
-            'conid',
-            'ticker',
-            'name',
-            'unrealizedPnl',
-            'mktValue',
-            'mktPrice'
-        ]
+    marketdata_fields = {
+        '31': 'lastPrice',
+        '80': 'unrealizedPnlPercent',
+        '78': 'dailyPnl',
+    }
+
+    def get_data(self):
+        full_positions = self.client.positions(account_id = self.account_id).data
+
         positions = [
-            { k: v for k, v in d.items() if k in positions_fields }
+            { k: v for k, v in d.items() if k in self.positions_fields }
             for d in full_positions
         ]
 
-        marketdata_fields = {
-            '31': 'lastPrice',
-            '80': 'unrealizedPnlPercent',
-            '78': 'dailyPnl',
-        }
+        self.client.receive_brokerage_accounts()
+        marketdata = self.client.live_marketdata_snapshot(
+            conids = [ str(item['conid']) for item in full_positions ],
+            fields = list(self.marketdata_fields.keys())
+        ).data
 
-        try:
-            client.receive_brokerage_accounts()
-            marketdata = client.live_marketdata_snapshot(
-                conids = [ str(item['conid']) for item in full_positions ],
-                fields = list(marketdata_fields.keys())
-            ).data
+        self.marketdata_fields['conid'] = 'conid'
+        processed_marketdata = [
+            { self.marketdata_fields[key]: value for key, value in item.items() if key in self.marketdata_fields }
+            for item in marketdata
+        ]
 
-            marketdata_fields['conid'] = 'conid'
-            processed_marketdata = [
-                { marketdata_fields[key]: value for key, value in item.items() if key in marketdata_fields }
-                for item in marketdata
-            ]
+        return [
+            { **pos, **next(md for md in processed_marketdata if md['conid'] == pos['conid']) }
+            for pos in positions
+        ]
 
-            merged = [
-                { **pos, **next(md for md in processed_marketdata if md['conid'] == pos['conid']) }
-                for pos in positions
-            ]
+    def get_positions(self):
+        attempts = 0
+        data = self.get_data()
+        while attempts < 3 and all(row.get('dailyPnl', 0) == 0 for row in data):
+            print('Bad data. Retry attempt:', attempts)
+            data = self.get_data()
+            attempts += 1
 
-            return [ self.clean(row) for row in merged ]
-        except Exception as e:
-            print(e)
-            return [ self.cleanPosition(row) for row in positions ]
+        if attempts == 3:
+            return [ self.clean_position(row) for row in data ]
+
+        return [ self.clean_row(row) for row in data ]
