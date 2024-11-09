@@ -1,5 +1,6 @@
 from ibind import IbkrClient
 import urllib3
+import time
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class Ibkr:
@@ -87,11 +88,18 @@ class Ibkr:
             for pos in positions
         ]
 
+    def is_bad_data(self, data):
+        all_daily_pnl_zero = all(row.get('dailyPnl', 0) == 0 for row in data)
+        any_ticker_missing = any('ticker' not in row for row in data)
+        return all_daily_pnl_zero or any_ticker_missing
+
     def get_positions(self):
-        attempts = 0
+        attempts = 1
         data = self.get_data()
-        while attempts < 3 and all(row.get('dailyPnl', 0) == 0 for row in data):
-            print('Bad data. Retry attempt:', attempts)
+
+        while attempts <= 3 and self.is_bad_data(data):
+            print('Bad data. Retry attempt', attempts)
+            time.sleep(1)
             data = self.get_data()
             attempts += 1
 
