@@ -4,10 +4,13 @@ import time
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class Ibkr:
-    def __init__(self, host='localhost'):
-        self.client = IbkrClient(host=host)
-        self.account_id = self.client.portfolio_accounts().data[0]['id']
-        print('Account ID:', self.account_id)
+    def __init__(self):
+        try:
+            self.client = IbkrClient(host='localhost')
+            self.account_id = self.client.portfolio_accounts().data[0]['id']
+            print('Account ID:', self.account_id)
+        except Exception:
+            print('Unable to fetch account ID')
 
     def processK(self, val):
         if 'K' in val:
@@ -94,6 +97,9 @@ class Ibkr:
         return all_daily_pnl_zero or any_ticker_missing
 
     def get_positions(self):
+        if self.account_id is None:
+            self.account_id = self.client.portfolio_accounts().data[0]['id']
+
         attempts = 1
         data = self.get_data()
 
