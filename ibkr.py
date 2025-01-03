@@ -13,10 +13,14 @@ class Ibkr:
             print('Unable to fetch account ID')
 
     def processK(self, val):
-        if 'K' in val:
-            return float(val.replace('K', '')) * 1000
-        else:
-            return float(val)
+        try:
+            if 'K' in val:
+                return float(val.replace('K', '')) * 1000
+            else:
+                return float(val)
+        except Exception:
+            print(val)
+            return 0
 
     def clean_position(self, row):
         unrealizedPnlPercent = row['unrealizedPnl'] / row['mktValue']
@@ -109,7 +113,10 @@ class Ibkr:
             data = self.get_data()
             attempts += 1
 
-        if attempts == 3:
-            return [ self.clean_position(row) for row in data ]
+        cash = self.client.portfolio_summary(account_id = self.account_id).data['availablefunds']['amount']
+        cash_obj = {'ticker': 'CASH', 'name': 'Cash', 'lastPrice': 0, 'dailyPnl': 0, 'changePercent': 0, 'unrealizedPnl': 0, 'unrealizedPnlPercent': 0, 'mktValue': cash}
 
-        return [ self.clean_row(row) for row in data ]
+        if attempts == 3:
+            return [self.clean_position(row) for row in data] + [cash_obj]
+
+        return [self.clean_row(row) for row in data] + [cash_obj]

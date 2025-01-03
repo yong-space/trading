@@ -84,10 +84,15 @@ const SummaryTow = ({ summary }) => !summary.positions ? '' : html`
 
 const textFields = [ 'ticker' ];
 const sortData = (data, field, order) => {
+    const cash = data.find((position) => position.ticker === 'CASH');
+    const nonCash = data.filter((position) => position.ticker !== 'CASH');
+    let sortedNonCash;
     if (textFields.indexOf(field) === -1) {
-        return data.toSorted((a, b) => (order === 'asc') ? (a[field] - b[field]) : (b[field] - a[field]));
+        sortedNonCash = nonCash.toSorted((a, b) => (order === 'asc') ? (a[field] - b[field]) : (b[field] - a[field]));
+    } else {
+        sortedNonCash = nonCash.toSorted((a, b) => (order === 'asc') ? a[field].localeCompare(b[field]) : b[field].localeCompare(a[field]));
     }
-    return data.toSorted((a, b) => (order === 'asc') ? a[field].localeCompare(b[field]) : b[field].localeCompare(a[field]));
+    return [ ...sortedNonCash, cash ];
 };
 
 const Main = () => {
