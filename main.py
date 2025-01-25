@@ -15,4 +15,13 @@ async def positions():
         exc_info = sys.exc_info()
         raise HTTPException(status_code=500, detail=''.join(traceback.format_exception(*exc_info)))
 
+@app.get("/summary")
+async def meta():
+    try:
+        return ibkr.get_summary()
+    except Exception:
+        exc_info = sys.exc_info()
+        raise HTTPException(status_code=500, detail=''.join(traceback.format_exception(*exc_info)))
+
+
 app.mount("/", StaticFiles(directory="static", html = True), name="static")

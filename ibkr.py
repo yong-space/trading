@@ -1,3 +1,4 @@
+import pprint
 from ibind import IbkrClient
 import urllib3
 import time
@@ -120,3 +121,10 @@ class Ibkr:
             return [self.clean_position(row) for row in data] + [cash_obj]
 
         return [self.clean_row(row) for row in data] + [cash_obj]
+
+    def get_summary(self):
+        full_positions = self.client.positions(account_id = self.account_id).data
+        holdings = sum(item['mktValue'] for item in full_positions)
+        cash = self.client.portfolio_summary(account_id = self.account_id).data['availablefunds']['amount']
+        fx = self.client.live_marketdata_snapshot(conids = ['37928772'], fields = ['31']).data[0]['31']
+        return dict(fx = fx, broker = 'IBKR', brokerColour = 'd81222', holdings = holdings, cash = cash)
