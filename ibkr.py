@@ -128,5 +128,5 @@ class Ibkr:
         full_positions = self.client.positions(account_id = self.account_id).data
         holdings = sum(item['mktValue'] for item in full_positions)
         cash = self.client.portfolio_summary(account_id = self.account_id).data['availablefunds']['amount']
-        fx = self.client.live_marketdata_snapshot(conids = ['37928772'], fields = ['31']).data[0]['31']
+        fx = self.client.currency_exchange_rate('USD', 'SGD').data['rate']
         return dict(fx = fx, broker = 'IBKR', brokerColour = 'd81222', holdings = holdings, cash = cash)
