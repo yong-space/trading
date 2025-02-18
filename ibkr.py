@@ -114,7 +114,7 @@ class Ibkr:
             data = self.get_data()
             attempts += 1
 
-        cash = self.client.portfolio_summary(account_id = self.account_id).data['availablefunds']['amount']
+        cash = self.client.portfolio_summary(account_id = self.account_id).data['totalcashvalue']['amount']
         cash_obj = {'ticker': 'CASH', 'name': 'Cash', 'lastPrice': 0, 'dailyPnl': 0, 'changePercent': 0, 'unrealizedPnl': 0, 'unrealizedPnlPercent': 0, 'mktValue': cash}
 
         if attempts == 3:
@@ -127,6 +127,6 @@ class Ibkr:
             self.account_id = self.client.portfolio_accounts().data[0]['id']
         full_positions = self.client.positions(account_id = self.account_id).data
         holdings = sum(item['mktValue'] for item in full_positions)
-        cash = self.client.portfolio_summary(account_id = self.account_id).data['availablefunds']['amount']
+        cash = self.client.portfolio_summary(account_id = self.account_id).data['totalcashvalue']['amount']
         fx = self.client.currency_exchange_rate('USD', 'SGD').data['rate']
         return dict(fx = fx, broker = 'IBKR', brokerColour = 'd81222', holdings = holdings, cash = cash)
