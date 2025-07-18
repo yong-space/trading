@@ -130,3 +130,23 @@ class Ibkr:
         cash = self.client.portfolio_summary(account_id = self.account_id).data['totalcashvalue']['amount']
         fx = self.client.currency_exchange_rate('USD', 'SGD').data['rate']
         return dict(fx = fx, broker = 'IBKR', brokerColour = 'd81222', holdings = holdings, cash = cash)
+
+    def get_trades(self):
+        return self.client.trades(account_id = self.account_id, days = 7).data
+
+    def get_transaction_history(self):
+        full_positions = self.client.positions(account_id = self.account_id).data
+        conids = [str(item['conid']) for item in full_positions]
+        results = []
+
+        for conid in conids:
+            data = self.client.transaction_history(
+                account_ids=self.account_id,
+                currency='USD',
+                conids=[conid]
+            ).data
+            if 'transactions' in data:
+                results.extend(data['transactions'])
+
+    def get_performance(self):
+        return self.client.account_performance(account_ids = self.account_id, period = 'YTD')
