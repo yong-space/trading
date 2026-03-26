@@ -117,8 +117,8 @@ class Ibkr:
         cash = self.client.portfolio_summary(account_id = self.account_id).data['totalcashvalue']['amount']
         cash_obj = {'ticker': 'CASH', 'name': 'Cash', 'lastPrice': 0, 'dailyPnl': 0, 'changePercent': 0, 'unrealizedPnl': 0, 'unrealizedPnlPercent': 0, 'mktValue': cash}
 
-        if attempts == 3:
-            return [self.clean_position(row) for row in data] + [cash_obj]
+        if attempts > 3:
+            return [self.clean_position(row) for row in data if 'ticker' in row] + [cash_obj]
 
         return [self.clean_row(row) for row in data] + [cash_obj]
 
