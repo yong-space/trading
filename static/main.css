@@ -99,3 +99,28 @@ h1 {
 }
 .table-row > div:first-child { border-left: 2px #005757 solid }
 .table-row > div:last-child { border-right: 2px #005757 solid }
+.main {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 1px;
+    overflow: hidden;
+}
+.toggle {
+    display: flex;
+    gap: .3rem;
+    padding: .3rem 0;
+    flex-shrink: 0;
+}
+.toggle-btn {
+    font-family: monospace;
+    font-size: 1rem;
+    padding: .2rem .7rem;
+    border: 2px #005757 solid;
+    background: #fff;
+    color: #005757;
+    cursor: pointer;
+}
+.toggle-btn.active {
+    background: #005757;
+    color: #fff;
+}

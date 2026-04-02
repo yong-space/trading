@@ -95,14 +95,25 @@ const sortData = (data, field, order) => {
     return [ ...sortedNonCash, cash ];
 };
 
+const ModeToggle = ({ mode, setMode }) => html`
+    <div class="toggle">
+        <button class=${'toggle-btn' + (mode === 'live' ? ' active' : '')} onClick=${() => setMode('live')}>Live</button>
+        <button class=${'toggle-btn' + (mode === 'eod' ? ' active' : '')} onClick=${() => setMode('eod')}>End of Day</button>
+    </div>
+`;
+
 const Main = () => {
     const [ data, setData ] = useState([]);
     const [ summary, setSummary ] = useState({});
     const [ sort, setSort ] = useState({ field: 'changePercent', order: 'desc' });
     const [ error, setError ] = useState('');
+    const [ mode, setMode ] = useState('live');
 
     useEffect(() => {
-        fetch('positions')
+        setData([]);
+        setError('');
+        const url = mode === 'eod' ? 'positions/eod' : 'positions';
+        fetch(url)
             .then(async (response) => {
                 if (response.ok) {
                     return response.json();
@@ -111,7 +122,7 @@ const Main = () => {
             })
             .then((response) => setData(sortData(response, sort.field, sort.order)))
             .catch((e) => setError(e.message));
-    }, []);
+    }, [ mode ]);
 
     useEffect(() => {
         if (data.length === 0) {
@@ -135,13 +146,18 @@ const Main = () => {
         setData(sortData(data, sort.field, sort.order));
     }, [ sort ]);
 
-    return error || (!data.length ? 'Loading..' : html`
-        <div class="table">
-            <${Headers} sort=${sort} setSort=${setSort} />
-            <${DataRows} data=${data} />
-            <${SummaryTow} summary=${summary} />
+    return html`
+        <div class="main">
+            <${ModeToggle} mode=${mode} setMode=${setMode} />
+            ${error ? error : (!data.length ? 'Loading..' : html`
+                <div class="table">
+                    <${Headers} sort=${sort} setSort=${setSort} />
+                    <${DataRows} data=${data} />
+                    <${SummaryTow} summary=${summary} />
+                </div>
+            `)}
         </div>
-    `);
+    `;
 };
 
 render(html`<${Main} />`, document.getElementById('root'));
