@@ -74,7 +74,7 @@ class Ibkr:
     eod_marketdata_fields = {
         '31': 'lastPrice',
         '80': 'unrealizedPnlPercent',
-        '7296': 'closePrice',
+        '7741': 'closePrice',
     }
 
     def clean_eod_row(self, row):
@@ -192,6 +192,8 @@ class Ibkr:
             conids = [ str(item['conid']) for item in full_positions ],
             fields = list(self.eod_marketdata_fields.keys())
         ).data
+
+        pprint.pp(marketdata)
 
         fields_map = {**self.eod_marketdata_fields, 'conid': 'conid'}
         processed_marketdata = [
