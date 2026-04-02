@@ -23,6 +23,14 @@ async def summary():
         exc_info = sys.exc_info()
         raise HTTPException(status_code=500, detail=''.join(traceback.format_exception(*exc_info)))
 
+@app.get("/positions/eod")
+async def positions_eod():
+    try:
+        return ibkr.get_eod_positions()
+    except Exception:
+        exc_info = sys.exc_info()
+        raise HTTPException(status_code=500, detail=''.join(traceback.format_exception(*exc_info)))
+
 @app.get("/trades")
 async def trades():
     return ibkr.get_trades()

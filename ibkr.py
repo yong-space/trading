@@ -71,6 +71,35 @@ class Ibkr:
         '78': 'dailyPnl',
     }
 
+    eod_marketdata_fields = {
+        '31': 'lastPrice',
+        '80': 'unrealizedPnlPercent',
+        '7296': 'closePrice',
+    }
+
+    def clean_eod_row(self, row):
+        lastPrice = float(row['lastPrice'].replace('C', '')) if row.get('lastPrice') else 0
+        mktValue = float(row['mktValue']) if 'mktValue' in row else 0
+        mktPrice = float(row['mktPrice']) if row.get('mktPrice') else 0
+        closePrice = float(row['closePrice']) if row.get('closePrice') else 0
+        unrealizedPnl = float(row.get('unrealizedPnl', 0))
+        unrealizedPnlPercent = float(row['unrealizedPnlPercent'].replace('%', '')) if row.get('unrealizedPnlPercent') else 0
+
+        shares = mktValue / mktPrice if mktPrice else 0
+        dailyPnl = (lastPrice - closePrice) * shares if closePrice else 0
+        changePercent = ((lastPrice - closePrice) / closePrice * 100) if closePrice else 0
+
+        return {
+            'ticker': row['ticker'],
+            'name': row['name'],
+            'lastPrice': lastPrice,
+            'dailyPnl': dailyPnl,
+            'changePercent': changePercent,
+            'unrealizedPnl': unrealizedPnl,
+            'unrealizedPnlPercent': unrealizedPnlPercent,
+            'mktValue': mktValue,
+        }
+
     def get_data(self):
         full_positions = self.client.positions(account_id = self.account_id).data
 
@@ -147,6 +176,38 @@ class Ibkr:
             ).data
             if 'transactions' in data:
                 results.extend(data['transactions'])
+
+    def get_eod_positions(self):
+        if not hasattr(self, 'account_id') or self.account_id is None:
+            self.account_id = self.client.portfolio_accounts().data[0]['id']
+
+        full_positions = self.client.positions(account_id=self.account_id).data
+        positions = [
+            { k: v for k, v in d.items() if k in self.positions_fields }
+            for d in full_positions
+        ]
+
+        self.client.receive_brokerage_accounts()
+        marketdata = self.client.live_marketdata_snapshot(
+            conids = [ str(item['conid']) for item in full_positions ],
+            fields = list(self.eod_marketdata_fields.keys())
+        ).data
+
+        fields_map = {**self.eod_marketdata_fields, 'conid': 'conid'}
+        processed_marketdata = [
+            { fields_map[key]: value for key, value in item.items() if key in fields_map }
+            for item in marketdata
+        ]
+
+        merged = [
+            { **pos, **next(md for md in processed_marketdata if md['conid'] == pos['conid']) }
+            for pos in positions
+        ]
+
+        cash = self.client.portfolio_summary(account_id = self.account_id).data['totalcashvalue']['amount']
+        cash_obj = {'ticker': 'CASH', 'name': 'Cash', 'lastPrice': 0, 'dailyPnl': 0, 'changePercent': 0, 'unrealizedPnl': 0, 'unrealizedPnlPercent': 0, 'mktValue': cash}
+
+        return [self.clean_eod_row(row) for row in merged] + [cash_obj]
 
     def get_performance(self):
         return self.client.account_performance(account_ids = self.account_id, period = 'YTD')
