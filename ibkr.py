@@ -43,10 +43,13 @@ class Ibkr:
         changePercent = (dailyPnl * 100) / (mktValue - dailyPnl) if mktValue != dailyPnl else 0
         unrealizedPnl = float(row.get('unrealizedPnl', 0))
         unrealizedPnlPercent = float(row['unrealizedPnlPercent'].replace('%', '')) if 'unrealizedPnlPercent' in row else 0
+        name = row.get('name', '').strip()
+        for suffix in ('-CL A', '-CLASS A', '.', ' INC', ' ETF', ' CORP', ' & CO'):
+            name = name.removesuffix(suffix).strip()
 
         return {
             'ticker': row['ticker'],
-            'name': row['name'],
+            'name': name,
             'lastPrice': lastPrice,
             'dailyPnl': dailyPnl,
             'changePercent': changePercent,

@@ -147,16 +147,19 @@ const Main = () => {
     }, [ sort ]);
 
     return html`
-        <div class="main">
+        <header>
+            <h1>Portfolio</h1>
             <${ModeToggle} mode=${mode} setMode=${setMode} />
-            ${error ? error : (!data.length ? 'Loading..' : html`
+        </header>
+        ${error ? error : (!data.length ? 'Loading..' : html`
+            <div class="table-container">
                 <div class="table">
                     <${Headers} sort=${sort} setSort=${setSort} />
                     <${DataRows} data=${data} />
                     <${SummaryTow} summary=${summary} />
                 </div>
-            `)}
-        </div>
+            </div>
+        `)}
     `;
 };
 
